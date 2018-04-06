@@ -1,3 +1,6 @@
+# Store Credit Assessment
+> By @darren
+
 Python script for pulling and processing data related to purchase/use of store credit.
 
 To run this script, use the command
