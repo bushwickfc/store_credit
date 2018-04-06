@@ -12,6 +12,18 @@ def datetime_converter(d):
     if isinstance(d, datetime.datetime):
         return d.__str__()
 
+def calculate_revolving_balance(list):
+    output_list = []
+    revolving_balance = 0
+
+    for transaction_summary in list:
+        revolving_balance += transaction_summary['member_prepay']
+        revolving_balance -= transaction_summary['debt']
+        transaction_summary['revolving_balance'] = revolving_balance
+        output_list.append(transaction_summary)
+
+    return output_list
+
 db = MySQLdb.connect(credentials.hostname, credentials.username, credentials.password, credentials.database)
 prepay_cursor = db.cursor()
 debt_cursor = db.cursor()
@@ -48,8 +60,9 @@ for row in prepay_cursor:
         transaction_dict[date]['member_prepay'] += row[1]
     else:
         transaction_dict[date] = {
+            'date': date,
             'member_prepay': row[1],
-            'debt': 0
+            'debt': 0,
         }
 
 for row in debt_cursor:
@@ -59,14 +72,19 @@ for row in debt_cursor:
         transaction_dict[date]['debt'] += row[1]
     else:
         transaction_dict[date] = {
+            'date': date,
             'member_prepay': 0,
             'debt': row[1]
         }
 
+# Now that the transactions have been 'squashed' by date, push them into a list to be sorted
 for key in transaction_dict:
-    transaction_dict[key]['date'] = key
     transaction_list.append(transaction_dict[key])
 
+# Sort the list by date
 sorted_transaction_list = sorted(transaction_list, key = itemgetter('date'))
+
+# Print the final list, in which each dict will have an additional 'revolving_balance' key
+print(calculate_revolving_balance(sorted_transaction_list))
 
 db.close()
