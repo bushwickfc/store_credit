@@ -1,6 +1,7 @@
 import MySQLdb
 import datetime
 import json
+import csv
 from operator import itemgetter
 import credentials
 
@@ -19,7 +20,7 @@ def calculate_revolving_balance(list):
     for transaction_summary in list:
         revolving_balance += transaction_summary['member_prepay']
         revolving_balance -= transaction_summary['debt']
-        transaction_summary['revolving_balance'] = revolving_balance
+        transaction_summary['revolving_balance'] = round(revolving_balance, 2)
         output_list.append(transaction_summary)
 
     return output_list
@@ -46,6 +47,8 @@ debt_query = """SELECT r.DATENEW AS DATE, TOTAL
 prepay_cursor.execute(member_prepay_query)
 debt_cursor.execute(debt_query)
 
+db.close()
+
 # Use the transaction_dict to combine transactions based on date - so multiple
 # transactions will get 'squashed' into a single date key.
 transaction_dict = {}
@@ -55,26 +58,28 @@ transaction_list = []
 
 for row in prepay_cursor:
     date = json.dumps(row[0], default = datetime_converter)[1:].split(' ')[0]
+    amount = round(row[1], 2)
 
     if date in transaction_dict:
-        transaction_dict[date]['member_prepay'] += row[1]
+        transaction_dict[date]['member_prepay'] += amount
     else:
         transaction_dict[date] = {
             'date': date,
-            'member_prepay': row[1],
+            'member_prepay': amount,
             'debt': 0,
         }
 
 for row in debt_cursor:
     date = json.dumps(row[0], default = datetime_converter)[1:].split(' ')[0]
+    amount = round(row[1], 2)
 
     if date in transaction_dict:
-        transaction_dict[date]['debt'] += row[1]
+        transaction_dict[date]['debt'] += amount
     else:
         transaction_dict[date] = {
             'date': date,
             'member_prepay': 0,
-            'debt': row[1]
+            'debt': amount
         }
 
 # Now that the transactions have been 'squashed' by date, push them into a list to be sorted
@@ -84,7 +89,11 @@ for key in transaction_dict:
 # Sort the list by date
 sorted_transaction_list = sorted(transaction_list, key = itemgetter('date'))
 
-# Print the final list, in which each dict will have an additional 'revolving_balance' key
-print(calculate_revolving_balance(sorted_transaction_list))
+# Prepare to export the final list, in which each dict will have an additional 'revolving_balance' key
+to_csv = calculate_revolving_balance(sorted_transaction_list)
+keys = to_csv[0].keys()
 
-db.close()
+with open('revolving_balance.csv', 'w') as output_file:
+    dict_writer = csv.DictWriter(output_file, keys)
+    dict_writer.writeheader()
+    dict_writer.writerows(to_csv)

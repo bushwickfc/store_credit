@@ -6,6 +6,8 @@ To run this script, use the command
 python3 store_credit.py
 ```
 
+Ultimately, it will output a file to this app's root directory named 'revolving_balance.csv'.
+
 ### Requirements
 
 This script requires an adjaent local copy of a file named 'credentials.py', which would be written like so:
