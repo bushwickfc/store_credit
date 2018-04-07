@@ -1,7 +1,7 @@
 # Store Credit Assessment
 > Author @darren
 
-Python script for pulling and processing data related to purchase/use of store credit.
+Python script for pulling and processing data related to purchase/use of store credit, calculating the revolving balance, and outputting a .csv summary.
 
 To run this script, use the command
 
@@ -9,9 +9,17 @@ To run this script, use the command
 python3 store_credit.py
 ```
 
+## Overview
+
+This script will query for two datasets:
+- Dates and totals of customer purchases of 'Member Prepay Payment'
+- Dates and totals of customer use of 'debt' payment type
+
+The returned data will be combined into one date-ordered dataset, and then used to calculate the revolving balance of store credit.
+
 Ultimately, it will output a file to this app's root directory named 'revolving_balance.csv'.
 
-### Requirements
+## Requirements
 
 This script requires an adjacent local copy of a file named 'credentials.py', which would be written like so:
 

@@ -1,4 +1,9 @@
 import datetime
+import json
+
+# Format the datetime as just the date - ex. 2015-04-01
+def format_date(date):
+	return json.dumps(date, default = datetime_converter)[1:].split(' ')[0]
 
 # Convert the datetime.datetime data from the queries into a string.
 # Concept borrowed from https://code-maven.com/serialize-datetime-object-as-json-in-python

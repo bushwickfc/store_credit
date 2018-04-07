@@ -1,5 +1,4 @@
 import MySQLdb
-import json
 import csv
 from operator import itemgetter
 import credentials
@@ -38,7 +37,7 @@ transaction_dict = {}
 transaction_list = []
 
 for row in prepay_cursor:
-    date = json.dumps(row[0], default = util.datetime_converter)[1:].split(' ')[0]
+    date = util.format_date(row[0])
     amount = round(row[1], 2)
 
     if date in transaction_dict:
@@ -51,7 +50,7 @@ for row in prepay_cursor:
         }
 
 for row in debt_cursor:
-    date = json.dumps(row[0], default = util.datetime_converter)[1:].split(' ')[0]
+    date = util.format_date(row[0])
     amount = round(row[1], 2)
 
     if date in transaction_dict:
